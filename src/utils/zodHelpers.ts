@@ -1,3 +1,4 @@
+import { IdGenerator } from "./generator";
 import { Edge, Node } from "reactflow";
 import { ZodDefault, ZodEffects, ZodNullable, ZodOptional } from "zod";
 import { z } from "zod";
@@ -64,69 +65,107 @@ export const isZodFirstPartyTypeKind = (
   return (Object.values(z.ZodFirstPartyTypeKind) as string[]).includes(str);
 };
 
-export const getInitialData = <T extends z.ZodSchema, U extends Dictionary>(
-  schema: T,
-  dict: U
+const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
+  dict: T,
+  schema: U
 ) => {
-  const { baseSchema } = getBaseSchema(schema);
-
-  if (!(baseSchema instanceof z.ZodObject)) {
-    throw new Error("Root schema must be an object");
-  }
-
-  const nodeTypes: {
+  const specs: {
+    parent: string;
     key: string;
     name: string;
     type: z.ZodFirstPartyTypeKind;
     schema: z.ZodSchema;
   }[] = [];
-  const rootObjectSchema = Object.fromEntries(
-    Object.entries(baseSchema.shape).map(([key, value]) => {
-      const { baseSchema: schema } = getBaseSchema(value as z.ZodAny);
-      const name = findKey(dict, schema);
-      const type = getType(schema);
-      name && nodeTypes.push({ key, name, type, schema });
-      return [key, name ?? type];
-    })
-  );
-
-  const label = findKey(dict, baseSchema) ?? "Root";
-  const rootNode = {
-    id: label,
-    position: { x: 0, y: 0 },
-    type: "zodObjectNode",
-    data: {
-      label,
-      schema: rootObjectSchema,
-    },
-  };
-  const nodes: Node[] = [rootNode];
-  const edges: Edge[] = [];
-  for (const { key, name, schema } of nodeTypes) {
-    if (schema instanceof z.ZodObject) {
-      const data = getInitialData(schema, dict);
-      nodes.push(...data.nodes);
-      edges.push(...data.edges);
-    }
-    if (schema instanceof z.ZodEnum) {
-      nodes.push({
-        id: name,
+  const { baseSchema } = getBaseSchema(schema);
+  const parent =
+    findKey(dict, baseSchema) ?? idGenerator.generateId(getType(baseSchema));
+  if (baseSchema instanceof z.ZodObject) {
+    const currentObjectSchema = Object.fromEntries(
+      Object.entries(baseSchema.shape).map(([key, value]) => {
+        const { baseSchema: schema } = getBaseSchema(value as z.ZodAny);
+        const name = findKey(dict, schema);
+        const type = getType(schema);
+        if (!specs.find((spec) => spec.schema === schema)) {
+          if (name) {
+            specs.push({ parent, key, name, type, schema });
+          } else {
+            specs.push({
+              parent,
+              key,
+              name: idGenerator.generateId(type),
+              type,
+              schema,
+            });
+          }
+        }
+        return [key, name ?? type];
+      })
+    );
+    return {
+      specs,
+      node: {
+        id: parent,
+        position: { x: 0, y: 0 },
+        type: "zodObjectNode",
+        data: {
+          parent,
+          schema: currentObjectSchema,
+        },
+      },
+    };
+  } else if (baseSchema instanceof z.ZodEnum) {
+    return {
+      specs,
+      node: {
+        id: parent,
         position: { x: 0, y: 0 },
         type: "zodEnumNode",
         data: {
-          label: name,
-          items: schema._def.values,
+          parent,
+          items: baseSchema._def.values,
         },
-      });
+      },
+    };
+  }
+
+  return {
+    specs,
+    node: undefined,
+  };
+};
+
+const idGenerator = new IdGenerator();
+export const getInitialData = <T extends Dictionary>(dict: T) => {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+  const specs: {
+    parent: string;
+    key: string;
+    name: string;
+    type: z.ZodFirstPartyTypeKind;
+    schema: z.ZodSchema;
+  }[] = [];
+  for (const schema of Object.values(dict)) {
+    const { node, specs: currentSpecs } = generateSpecs(dict, schema);
+    if (node) {
+      nodes.push(node);
     }
+    specs.push(...currentSpecs);
+  }
+
+  console.log(specs);
+
+  for (const { parent, key, name, schema } of specs) {
     edges.push({
-      id: `${label}-${name}`,
-      source: label,
+      id: `${parent}-${name}`,
+      source: parent,
       target: name,
       sourceHandle: key,
       animated: true,
     });
   }
+
+  console.log(nodes, edges);
 
   return {
     nodes,

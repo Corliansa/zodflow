@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const ProductSchema = z.object({
+  productType: z.enum(["book", "movie"]),
   productId: z.string(),
   name: z.string(),
   description: z.string(),

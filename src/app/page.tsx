@@ -19,10 +19,7 @@ import { getInitialData } from "@/utils/zodHelpers";
 
 const nodeTypes = { zodObjectNode: ZodObjectNode, zodEnumNode: ZodEnumNode };
 
-const { nodes: initialNodes, edges: initialEdges } = getInitialData(
-  examples.MasterSchema,
-  examples
-);
+const { nodes: initialNodes, edges: initialEdges } = getInitialData(examples);
 
 export default function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
