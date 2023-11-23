@@ -18,7 +18,10 @@ export const UserSchema = z.object({
 });
 
 export const TestSchema = z.object({
+  enum: z.enum(["A", "B", "C", "D"]),
+  enumInArray: z.array(z.enum(["A", "B", "C", "D"])),
   array: z.array(z.string()),
+  arrayInArray: z.array(z.array(z.string())),
   tuple: z.tuple([z.string(), z.number()]),
   union: z.union([z.string(), z.number()]),
   record: z.record(z.string()),
