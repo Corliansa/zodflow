@@ -24,8 +24,21 @@ export const isZodFirstPartyTypeKind = (
   return (Object.values(z.ZodFirstPartyTypeKind) as string[]).includes(type);
 };
 
+const r = {
+  ZodArray: /^ZodArray<(.+)>$/,
+  ZodTuple: /^ZodTuple<\[(.+)\]>$/,
+  ZodUnion: /^ZodUnion<\[(.+)\]>$/,
+  ZodRecord: /^ZodRecord<(.+, .+)>$/,
+  ZodMap: /^ZodMap<(.+, .+)>$/,
+  ZodSet: /^ZodSet<(.+)>$/,
+  ZodLiteral: /^ZodLiteral<(.+)>$/,
+} as const;
+
 export const hasHandle = (type: string | z.ZodFirstPartyTypeKind) => {
   if (!isZodFirstPartyTypeKind(type)) {
+    if (Object.values(r).some((regex) => type.match(regex))) {
+      return false;
+    }
     return true;
   }
 
@@ -41,44 +54,42 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
     return type.replace(/^Zod/, "").toLowerCase();
   }
 
-  if (type.match(/^ZodArray<(.+)>/)) {
-    return `${renderType(type.match(/^ZodArray<(.+)>/)![1])}[]`;
+  if (type.match(r.ZodArray)) {
+    return `${renderType(type.match(r.ZodArray)![1])}[]`;
   }
 
-  if (type.match(/^ZodTuple<\[(.+)\]>/)) {
+  if (type.match(r.ZodTuple)) {
     return `[${type
-      .match(/ZodTuple<\[(.+)\]>/)![1]
+      .match(r.ZodTuple)![1]
       .split(", ")
       .map((t) => renderType(t))
       .join(", ")}]`;
   }
 
-  if (type.match(/^ZodUnion<\[(.+)\]>/)) {
+  if (type.match(r.ZodUnion)) {
     return type
-      .match(/ZodUnion<\[(.+)\]>/)![1]
+      .match(r.ZodUnion)![1]
       .split(", ")
       .map((t) => renderType(t))
       .join(" | ");
   }
 
-  if (type.match(/^ZodRecord<(.+, .+)>/)) {
-    const [keyType, valueType] = type
-      .match(/ZodRecord<(.+, .+)>/)![1]
-      .split(", ");
+  if (type.match(r.ZodRecord)) {
+    const [keyType, valueType] = type.match(r.ZodRecord)![1].split(", ");
     return `{ [key: ${renderType(keyType)}]: ${renderType(valueType)} }`;
   }
 
-  if (type.match(/^ZodMap<(.+, .+)>/)) {
-    const [keyType, valueType] = type.match(/ZodMap<(.+, .+)>/)![1].split(", ");
+  if (type.match(r.ZodMap)) {
+    const [keyType, valueType] = type.match(r.ZodMap)![1].split(", ");
     return `Map<${renderType(keyType)}, ${renderType(valueType)}>`;
   }
 
-  if (type.match(/^ZodSet<(.+)>/)) {
-    return `Set<${renderType(type.match(/^ZodSet<(.+)>/)![1])}>`;
+  if (type.match(r.ZodSet)) {
+    return `Set<${renderType(type.match(r.ZodSet)![1])}>`;
   }
 
-  if (type.match(/^ZodLiteral<(.+)>/)) {
-    return `Literal<${type.match(/^ZodLiteral<(.+)>/)![1]}>`;
+  if (type.match(r.ZodLiteral)) {
+    return `Literal<${type.match(r.ZodLiteral)![1]}>`;
   }
 
   return type;

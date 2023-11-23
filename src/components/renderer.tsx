@@ -20,10 +20,20 @@ export function ZodObjectNode({
         {data.label}
       </div>
       <div className="p-2">
-        {Object.entries(data.schema).map(([key, type]) => (
+        {Object.entries(data.schema).map(([key, type], index) => (
           <div key={key} className="flex gap-4 justify-between">
             <div>{key}</div>
             <div className="font-semibold">{renderType(type)}</div>
+            {hasHandle(type) && (
+              <Handle
+                key={key}
+                type="source"
+                id={key}
+                isConnectable={isConnectable}
+                position={Position.Right}
+                style={{ top: 60 + index * 24 }}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -33,18 +43,6 @@ export function ZodObjectNode({
         position={Position.Left}
         style={{ top: 20 }}
       />
-      {Object.entries(data.schema).map(([key, type], index) =>
-        hasHandle(type) ? (
-          <Handle
-            key={key}
-            type="source"
-            id={key}
-            isConnectable={isConnectable}
-            position={Position.Right}
-            style={{ top: 60 + index * 24 }}
-          />
-        ) : null
-      )}
     </div>
   );
 }
