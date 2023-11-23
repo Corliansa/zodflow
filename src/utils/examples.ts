@@ -15,6 +15,7 @@ export const UserSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string().min(8),
+  wishlist: z.array(ProductSchema),
 });
 
 export const TestSchema = z.object({
