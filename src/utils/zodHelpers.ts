@@ -232,7 +232,10 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
     idGenerator.generateId(getZodType(baseSchema));
   const label = config?.label ?? source;
 
-  if (baseSchema instanceof z.ZodEnum) {
+  if (
+    baseSchema instanceof z.ZodEnum ||
+    baseSchema instanceof z.ZodNativeEnum
+  ) {
     nodes.push({
       id: source,
       position: { x: 0, y: 0 },
@@ -241,16 +244,8 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         label,
         items: baseSchema._def.values,
       },
-    });
-  } else if (baseSchema instanceof z.ZodNativeEnum) {
-    nodes.push({
-      id: source,
-      position: { x: 0, y: 0 },
-      type: "zodEnumNode",
-      data: {
-        label,
-        items: baseSchema._def.values,
-      },
+      height: 150 + 30 * baseSchema._def.values.length,
+      width: 200,
     });
   } else if (baseSchema instanceof z.ZodObject) {
     const currentObjectSchema = Object.fromEntries(
@@ -272,6 +267,8 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         label,
         schema: currentObjectSchema,
       },
+      height: 150 + 30 * Object.keys(currentObjectSchema).length,
+      width: 400,
     });
   }
 
