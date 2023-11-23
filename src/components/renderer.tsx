@@ -1,4 +1,8 @@
-import { hasHandle, isZodFirstPartyTypeKind } from "@/utils/zodHelpers";
+import {
+  hasHandle,
+  isZodFirstPartyTypeKind,
+  renderType,
+} from "@/utils/zodHelpers";
 import { Handle, NodeProps, Position } from "reactflow";
 
 export type ZodObjectNodeData = {
@@ -16,14 +20,10 @@ export function ZodObjectNode({
         {data.label}
       </div>
       <div className="p-2">
-        {Object.entries(data.schema).map(([key, value]) => (
+        {Object.entries(data.schema).map(([key, type]) => (
           <div key={key} className="flex gap-4 justify-between">
             <div>{key}</div>
-            <div className="font-semibold">
-              {isZodFirstPartyTypeKind(value)
-                ? value.replace(/^Zod/, "").toLowerCase()
-                : value}
-            </div>
+            <div className="font-semibold">{renderType(type)}</div>
           </div>
         ))}
       </div>
@@ -33,8 +33,8 @@ export function ZodObjectNode({
         position={Position.Left}
         style={{ top: 20 }}
       />
-      {Object.entries(data.schema).map(([key, value], index) =>
-        hasHandle(value) ? (
+      {Object.entries(data.schema).map(([key, type], index) =>
+        hasHandle(type) ? (
           <Handle
             key={key}
             type="source"
