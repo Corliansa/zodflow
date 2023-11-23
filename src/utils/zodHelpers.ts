@@ -79,6 +79,10 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
     return `Set<${renderType(type.match(/^ZodSet<(\w+)>/)![1])}>`;
   }
 
+  if (type.match(/^ZodLiteral<(.+)>/)) {
+    return `Literal<${type.match(/^ZodLiteral<(.+)>/)![1]}>`;
+  }
+
   return type;
 };
 
@@ -229,6 +233,9 @@ const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
             animated: true,
           });
           edges.push(...specs.edges);
+        } else if (targetSchema instanceof z.ZodLiteral) {
+          const literalValue = targetSchema._def.value;
+          return [sourceHandle, `ZodLiteral<${JSON.stringify(literalValue)}>`];
         } else if (targetSchema instanceof z.ZodArray) {
           const { baseSchema: elementBaseSchema } = getBaseSchema(
             targetSchema._def.type
