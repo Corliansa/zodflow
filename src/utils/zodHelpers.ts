@@ -60,24 +60,41 @@ export const getBaseSchema = <T extends z.ZodSchema>(schema: T) => {
 };
 
 export const isZodFirstPartyTypeKind = (
-  str: string | z.ZodFirstPartyTypeKind
+  type: string | z.ZodFirstPartyTypeKind
 ) => {
-  return (Object.values(z.ZodFirstPartyTypeKind) as string[]).includes(str);
+  return (Object.values(z.ZodFirstPartyTypeKind) as string[]).includes(type);
 };
 
+export const hasHandle = (type: string | z.ZodFirstPartyTypeKind) => {
+  if (!isZodFirstPartyTypeKind(type)) {
+    return true;
+  }
+
+  if (["ZodEnum", "ZodObject"].includes(type)) {
+    return true;
+  }
+
+  return false;
+};
+
+const idGenerator = new IdGenerator();
 const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
   dict: T,
-  schema: U
+  schema: U,
+  config?: {
+    id?: string;
+    label?: string;
+  }
 ) => {
   const nodes: Node[] = [];
-  const edges: (Edge & {
-    targetType?: z.ZodFirstPartyTypeKind;
-    targetSchema?: z.ZodSchema;
-  })[] = [];
+  const edges: Edge[] = [];
 
   const { baseSchema } = getBaseSchema(schema);
   const source =
-    getName(dict, baseSchema) ?? idGenerator.generateId(getType(baseSchema));
+    getName(dict, baseSchema) ??
+    config?.id ??
+    idGenerator.generateId(getType(baseSchema));
+  const label = config?.label ?? source;
 
   if (baseSchema instanceof z.ZodEnum) {
     nodes.push({
@@ -85,7 +102,7 @@ const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
       position: { x: 0, y: 0 },
       type: "zodEnumNode",
       data: {
-        label: source,
+        label,
         items: baseSchema._def.values,
       },
     });
@@ -95,31 +112,79 @@ const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
       position: { x: 0, y: 0 },
       type: "zodEnumNode",
       data: {
-        label: source,
+        label,
         items: baseSchema._def.values,
       },
     });
   } else if (baseSchema instanceof z.ZodObject) {
     const currentObjectSchema = Object.fromEntries(
       Object.entries(baseSchema.shape).map(([sourceHandle, value]) => {
-        const { baseSchema: targetSchema } = getBaseSchema(value as z.ZodAny);
+        const { baseSchema: targetSchema } = getBaseSchema(
+          value as z.ZodSchema
+        );
         const target = getName(dict, targetSchema);
         const targetType = getType(targetSchema);
-        if (target) {
-          if (!edges.find((edge) => edge.targetSchema === targetSchema)) {
-            edges.push({
-              id: `${source}-${target}`,
-              source,
-              sourceHandle,
-              target,
-              targetType,
-              targetSchema,
-              animated: true,
-            });
-          }
+        if (target && !edges.find((edge) => edge.target === target)) {
+          edges.push({
+            id: `${source}-${target}`,
+            source,
+            sourceHandle,
+            target,
+            animated: true,
+          });
           return [sourceHandle, target];
         }
-        return [sourceHandle, target ?? targetType];
+        const newTarget = `${source}:${sourceHandle}`;
+        if (targetSchema instanceof z.ZodEnum) {
+          nodes.push({
+            id: newTarget,
+            position: { x: 0, y: 0 },
+            type: "zodEnumNode",
+            data: {
+              label: sourceHandle,
+              items: targetSchema._def.values,
+            },
+          });
+          edges.push({
+            id: `${source}-${newTarget}`,
+            source,
+            sourceHandle,
+            target: newTarget,
+            animated: true,
+          });
+        } else if (targetSchema instanceof z.ZodNativeEnum) {
+          nodes.push({
+            id: newTarget,
+            position: { x: 0, y: 0 },
+            type: "zodEnumNode",
+            data: {
+              label: sourceHandle,
+              items: targetSchema._def.values,
+            },
+          });
+          edges.push({
+            id: `${source}-${newTarget}`,
+            source,
+            sourceHandle,
+            target: newTarget,
+            animated: true,
+          });
+        } else if (targetSchema instanceof z.ZodObject) {
+          const specs = generateSpecs(dict, targetSchema, {
+            id: newTarget,
+            label: sourceHandle,
+          });
+          nodes.push(...specs.nodes);
+          edges.push({
+            id: `${source}-${newTarget}`,
+            source,
+            sourceHandle,
+            target: newTarget,
+            animated: true,
+          });
+          edges.push(...specs.edges);
+        }
+        return [sourceHandle, targetType];
       })
     );
     nodes.push({
@@ -127,7 +192,7 @@ const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
       position: { x: 0, y: 0 },
       type: "zodObjectNode",
       data: {
-        label: source,
+        label,
         schema: currentObjectSchema,
       },
     });
@@ -139,7 +204,6 @@ const generateSpecs = <T extends Dictionary, U extends z.ZodSchema>(
   };
 };
 
-const idGenerator = new IdGenerator();
 export const getInitialData = <T extends Dictionary>(dict: T) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
