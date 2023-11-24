@@ -34,16 +34,21 @@ const r = {
   ZodLiteral: /^ZodLiteral<(.+)>$/,
 } as const;
 
-export const hasHandle = (type: string | z.ZodFirstPartyTypeKind) => {
-  if (!isZodFirstPartyTypeKind(type)) {
-    if (Object.values(r).some((regex) => type.match(regex))) {
-      return false;
-    }
+export const hasHandle = (
+  type: string | z.ZodFirstPartyTypeKind,
+  whitelist?: string[]
+): boolean => {
+  if (["ZodEnum", "ZodNativeEnum", "ZodObject"].includes(type)) {
     return true;
   }
 
-  if (["ZodEnum", "ZodNativeEnum", "ZodObject"].includes(type)) {
+  if (whitelist?.includes(type)) {
     return true;
+  }
+
+  const innerType = Object.values(r).find((regex) => type.match(regex));
+  if (innerType) {
+    return hasHandle(type.match(innerType)![1], whitelist);
   }
 
   return false;
@@ -95,8 +100,8 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
   return type;
 };
 
-const getSchemaName = <T extends Dictionary>(obj: T, value: z.ZodSchema) => {
-  return Object.keys(obj).find((key) => obj[key] === value);
+const getSchemaName = <T extends Dictionary>(dict: T, value: z.ZodSchema) => {
+  return Object.keys(dict).find((key) => dict[key] === value);
 };
 
 export const getZodType = (schema: z.ZodSchema): z.ZodFirstPartyTypeKind => {
@@ -259,7 +264,7 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
       width: 200,
     });
   } else if (baseSchema instanceof z.ZodObject) {
-    const currentObjectSchema = Object.fromEntries(
+    const objectEntries = Object.fromEntries(
       Object.entries(baseSchema.shape).map(([key, value]) => [
         key,
         getType(dict, value as z.ZodSchema, {
@@ -276,9 +281,10 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
       type: "zodObjectNode",
       data: {
         label,
-        schema: currentObjectSchema,
+        entries: objectEntries,
+        schemas: Object.keys(dict),
       },
-      height: 150 + 30 * Object.keys(currentObjectSchema).length,
+      height: 150 + 30 * Object.keys(objectEntries).length,
       width: 400,
     });
   }
