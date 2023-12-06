@@ -16,7 +16,7 @@ export type UnwrapSchema<
   ? UnwrapSchema<U, StopAt>
   : T;
 
-type Dictionary = Record<string, z.ZodSchema>;
+export type Dictionary = Record<string, z.ZodSchema>;
 
 export const isZodFirstPartyTypeKind = (
   type: string | z.ZodFirstPartyTypeKind
@@ -181,7 +181,7 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
     nodes.push({
       id: newTarget,
       position: { x: 0, y: 0 },
-      type: "zodEnumNode",
+      type: "ZodEnumNode",
       data: {
         label: sourceHandle,
         items: targetSchema._def.values,
@@ -255,7 +255,7 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
     nodes.push({
       id: source,
       position: { x: 0, y: 0 },
-      type: "zodEnumNode",
+      type: "ZodEnumNode",
       data: {
         label,
         items: baseSchema._def.values,
@@ -278,7 +278,7 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
     nodes.push({
       id: source,
       position: { x: 0, y: 0 },
-      type: "zodObjectNode",
+      type: "ZodObjectNode",
       data: {
         label,
         entries: objectEntries,
