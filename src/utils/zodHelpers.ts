@@ -94,7 +94,7 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
   }
 
   if (type.match(r.ZodLiteral)) {
-    return `Literal<${type.match(r.ZodLiteral)![1]}>`;
+    return type.match(r.ZodLiteral)![1];
   }
 
   return type;
