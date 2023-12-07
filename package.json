@@ -2,6 +2,9 @@
   "name": "zodflow",
   "version": "0.1.0",
   "private": false,
+  "bin": {
+    "zodflow": "./cli.mjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
