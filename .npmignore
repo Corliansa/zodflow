@@ -1,0 +1,11 @@
+node_modules
+public
+src
+.eslintrc.json
+.bun.lockb
+next-env.d.ts
+next.config.js
+postcss.config.js
+README.md
+tailwind.config.ts
+tscconfig.json

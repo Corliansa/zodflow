@@ -16,9 +16,9 @@ if (!fileName) {
     stdio: "inherit",
     cwd: __dirname,
   });
-  spawn("npm", ["run", "dev"], {
+  spawn("node", [".next/standalone/server.js"], {
     stdio: "inherit",
     cwd: __dirname,
-    env: { ...process.env, NEXT_PUBLIC_SCHEMA_PATH: fileName },
+    env: { ...process.env, SCHEMA_PATH: fileName },
   });
 }
