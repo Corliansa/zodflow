@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { spawn, execSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,13 +13,18 @@ if (!fileName) {
   console.log("Please provide a file name. Usage: npx zodflow <filename>");
   process.exit(1);
 } else {
-  execSync("npm install", {
-    stdio: "inherit",
-    cwd: __dirname,
-  });
-  spawn("node", [".next/standalone/server.js"], {
-    stdio: "inherit",
-    cwd: __dirname,
-    env: { ...process.env, SCHEMA_PATH: fileName },
+  const schemaPath = path.join(__dirname, ".next/standalone/schema.mjs");
+  build({
+    entryPoints: [fileName],
+    outfile: schemaPath,
+    bundle: true,
+    format: "esm",
+    external: ["zod"],
+  }).then(() => {
+    spawn("node", [".next/standalone/server.js"], {
+      stdio: "inherit",
+      cwd: __dirname,
+      env: { ...process.env, SCHEMA_PATH: schemaPath },
+    });
   });
 }

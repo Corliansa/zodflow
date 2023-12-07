@@ -4,10 +4,10 @@ import Dagre, { Label } from "@dagrejs/dagre";
 const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
 export const getLayoutedElements = (
-  nodes: Node[],
-  edges: Edge[],
+  graph: { nodes: Node[]; edges: Edge[] },
   options: { direction: "TB" | "LR" }
 ) => {
+  const { nodes, edges } = graph;
   g.setGraph({ rankdir: options.direction });
 
   edges.forEach((edge) => g.setEdge(edge.source, edge.target));

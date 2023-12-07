@@ -1,16 +1,14 @@
 import { Zodflow } from "@/components/zodflow";
 import { getLayoutedElements } from "@/utils/auto-layout";
-import { getInitialData } from "@/utils/zodHelpers";
+
+export const dynamic = "force-dynamic";
 
 export default async function App() {
-  const schemas = async () =>
-    process.env.SCHEMA_PATH
-      ? await import(`${process.env.SCHEMA_PATH}`)
-      : await import("@/utils/examples");
-  const { nodes, edges } = getInitialData(await schemas());
+  const initialData = await (
+    await fetch(`http://localhost:${process.env.PORT ?? 3000}/data`)
+  ).json();
   const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-    nodes,
-    edges,
+    initialData,
     { direction: "LR" }
   );
   return (
