@@ -12,6 +12,10 @@ if (!fileName) {
   console.log("Please provide a file name. Usage: npx zodflow <filename>");
   process.exit(1);
 } else {
+  spawn("npm", ["install"], {
+    stdio: "inherit",
+    cwd: __dirname,
+  });
   spawn("npm", ["run", "dev"], {
     stdio: "inherit",
     cwd: __dirname,
