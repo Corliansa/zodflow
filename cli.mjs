@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -12,7 +12,7 @@ if (!fileName) {
   console.log("Please provide a file name. Usage: npx zodflow <filename>");
   process.exit(1);
 } else {
-  spawn("npm", ["install"], {
+  spawnSync("npm", ["install"], {
     stdio: "inherit",
     cwd: __dirname,
   });
