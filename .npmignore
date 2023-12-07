@@ -6,6 +6,5 @@ src
 next-env.d.ts
 next.config.js
 postcss.config.js
-README.md
 tailwind.config.ts
 tscconfig.json
