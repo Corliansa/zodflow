@@ -1,5 +1,5 @@
 import { IdGenerator } from "./generator";
-import { Edge, Node } from "reactflow";
+import { Edge, MarkerType, Node } from "reactflow";
 import { ZodDefault, ZodEffects, ZodNullable, ZodOptional } from "zod";
 import { z } from "zod";
 
@@ -160,7 +160,10 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
         source,
         sourceHandle,
         target,
-        animated: true,
+        markerEnd: {
+          type: "arrowclosed" as MarkerType,
+        },
+        type: "simplebezier",
       });
     }
   };
@@ -261,7 +264,11 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         items: baseSchema._def.values,
       },
       height: 150 + 30 * baseSchema._def.values.length,
-      width: 200,
+      width:
+        Math.max(
+          label.length * 16,
+          ...baseSchema._def.values.map((v: string) => v.length * 16)
+        ) + 50,
     });
   } else if (baseSchema instanceof z.ZodObject) {
     const objectEntries = Object.fromEntries(
@@ -285,7 +292,13 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         schemas: Object.keys(dict),
       },
       height: 150 + 30 * Object.keys(objectEntries).length,
-      width: 400,
+      width:
+        Math.max(
+          label.length * 16,
+          ...Object.entries(dict).map(
+            ([k, v]) => (k.length + renderType(getZodType(v)).length) * 16
+          )
+        ) + 50,
     });
   }
 
