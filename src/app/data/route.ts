@@ -1,29 +1,33 @@
 import * as examples from "@/utils/examples";
 import { getInitialData } from "@/utils/zodHelpers";
+import fs from "node:fs/promises";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (process.env.SCHEMA_PATH) {
+  const schemaPath = process.env.SCHEMA_PATH;
+  const exampleData = getInitialData(examples);
+  if (schemaPath) {
     let fallback = false;
     let error = undefined;
-    const schemas = await import(process.env.SCHEMA_PATH)
-      .then((mod) => mod)
+    const schemas = await fs
+      .readFile(schemaPath, { encoding: "utf-8" })
+      .then((result) => JSON.parse(result))
       .catch((e) => {
+        console.error(e);
         console.error(
-          `Failed to load schema path: ${process.env.SCHEMA_PATH}, falling back to examples`
+          `Failed to load schema path: ${schemaPath}, falling back to examples`
         );
         fallback = true;
         error = e;
-        return examples;
+        return exampleData;
       });
     return new Response(
       JSON.stringify({
-        // @ts-ignore
-        ...getInitialData(schemas),
+        ...schemas,
         fallback,
         error,
-        schema: process.env.SCHEMA_PATH,
+        schema: schemaPath,
       }),
       {
         headers: { "content-type": "application/json" },
@@ -31,7 +35,7 @@ export async function GET() {
     );
   }
 
-  return new Response(JSON.stringify(getInitialData(examples)), {
+  return new Response(JSON.stringify(exampleData), {
     headers: { "content-type": "application/json" },
   });
 }
