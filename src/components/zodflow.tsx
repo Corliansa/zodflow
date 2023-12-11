@@ -16,6 +16,7 @@ import ReactFlow, {
 import * as nodeTypes from "./custom-nodes";
 
 import "reactflow/dist/style.css";
+import DownloadImage from "./download-image";
 
 export const Zodflow: React.FC<{
   initialNodes: Node[];
@@ -38,6 +39,7 @@ export const Zodflow: React.FC<{
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
     >
+      <DownloadImage />
       <Controls />
       <MiniMap />
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
