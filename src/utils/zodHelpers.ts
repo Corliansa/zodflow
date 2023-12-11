@@ -32,13 +32,14 @@ const r = {
   ZodMap: /^ZodMap<(.+, .+)>$/,
   ZodSet: /^ZodSet<(.+)>$/,
   ZodLiteral: /^ZodLiteral<(.+)>$/,
+  ZodEnum: /^ZodEnum<(.+)>$/,
 } as const;
 
 export const hasHandle = (
   type: string | z.ZodFirstPartyTypeKind,
   whitelist?: string[]
 ): boolean => {
-  if (["ZodEnum", "ZodNativeEnum", "ZodObject"].includes(type)) {
+  if (["ZodObject"].includes(type)) {
     return true;
   }
 
@@ -95,6 +96,14 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
 
   if (type.match(r.ZodLiteral)) {
     return type.match(r.ZodLiteral)![1];
+  }
+
+  if (type.match(r.ZodEnum)) {
+    return type
+      .match(r.ZodEnum)![1]
+      .split(", ")
+      .map((t) => renderType(t))
+      .join(" | ");
   }
 
   return type;
@@ -181,16 +190,22 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
     targetSchema instanceof z.ZodEnum ||
     targetSchema instanceof z.ZodNativeEnum
   ) {
-    nodes.push({
-      id: newTarget,
-      position: { x: 0, y: 0 },
-      type: "ZodEnumNode",
-      data: {
-        label: sourceHandle,
-        items: targetSchema._def.values,
-      },
-    });
-    addEdge(newTarget);
+    if (target) {
+      nodes.push({
+        id: newTarget,
+        position: { x: 0, y: 0 },
+        type: "ZodEnumNode",
+        data: {
+          label: sourceHandle,
+          items: targetSchema._def.values,
+        },
+      });
+      addEdge(newTarget);
+    } else {
+      return `ZodEnum<${targetSchema._def.values
+        .map((value: string) => JSON.stringify(value))
+        .join(", ")}>`;
+    }
   } else if (targetSchema instanceof z.ZodObject) {
     const specs = getSchemaData(dict, targetSchema, {
       id: newTarget,
