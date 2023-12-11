@@ -30,6 +30,7 @@ export const TestSchema = z.object({
   object: z.object({
     object: z.object({
       object: z.string(),
+      test: z.enum(["D", "E", "F"]),
     }),
   }),
   arrayInUnion: z.union([z.number().array(), z.array(z.string())]),
