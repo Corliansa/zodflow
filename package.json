@@ -1,6 +1,6 @@
 {
   "name": "zodflow",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": false,
   "bin": {
     "zodflow": "cli.mjs"
@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:npm": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/"
+    "build:npm": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && esbuild src/utils/zodHelpers.ts --outfile=.next/standalone/helpers.mjs --bundle --format=esm --external:zod"
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.0.4",

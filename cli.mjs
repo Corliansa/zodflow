@@ -15,29 +15,21 @@ if (!fileName) {
   process.exit(1);
 }
 const schemaPath = path.join(__dirname, ".next/tmp_schema.mjs");
-const helpersPath = path.join(__dirname, ".next/tmp_helpers.mjs");
-await Promise.all([
-  build({
-    entryPoints: [fileName],
-    outfile: schemaPath,
-    bundle: true,
-    format: "esm",
-    external: ["zod"],
-  }),
-  build({
-    entryPoints: [path.join(__dirname, "src/utils/zodHelpers.ts")],
-    outfile: helpersPath,
-    bundle: true,
-    format: "esm",
-    external: ["zod"],
-  }),
-]);
+await build({
+  entryPoints: [fileName],
+  outfile: schemaPath,
+  bundle: true,
+  format: "esm",
+  external: ["zod"],
+});
 const schemas = await import(schemaPath);
-const { getInitialData } = await import(helpersPath);
+const { getInitialData } = await import(
+  path.join(__dirname, ".next/standalone/helpers.mjs")
+);
 const initialData = getInitialData(schemas);
 const initialDataPath = path.join(__dirname, ".next/tmp_initialData.json");
 await fs.writeFile(path.join(initialDataPath), JSON.stringify(initialData));
-await Promise.all([fs.rm(schemaPath), fs.rm(helpersPath)]);
+await fs.rm(schemaPath);
 
 spawn("node", [".next/standalone/server.js"], {
   stdio: "inherit",

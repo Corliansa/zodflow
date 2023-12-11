@@ -295,8 +295,8 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
       width:
         Math.max(
           label.length * 16,
-          ...Object.entries(dict).map(
-            ([k, v]) => (k.length + renderType(getZodType(v)).length) * 16
+          ...Object.entries(objectEntries).map(
+            ([k, v]) => (k.length + renderType(v).length) * 16
           )
         ) + 50,
     });
@@ -312,6 +312,9 @@ export const getInitialData = <T extends Dictionary>(dict: T) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   for (const schema of Object.values(dict)) {
+    if (!(schema instanceof z.ZodSchema)) {
+      continue;
+    }
     const specs = getSchemaData(dict, schema);
     nodes.push(...specs.nodes);
     edges.push(...specs.edges);
