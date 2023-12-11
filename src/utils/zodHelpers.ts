@@ -61,7 +61,7 @@ export const renderType = (type: string | z.ZodFirstPartyTypeKind): string => {
   }
 
   if (type.match(r.ZodArray)) {
-    return `${renderType(type.match(r.ZodArray)![1])}[]`;
+    return `Array<${renderType(type.match(r.ZodArray)![1])}>`;
   }
 
   if (type.match(r.ZodTuple)) {
