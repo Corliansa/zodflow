@@ -34,7 +34,7 @@ function DownloadImage() {
     );
 
     toPng(document.querySelector(".react-flow__viewport") as HTMLElement, {
-      backgroundColor: "#1a365d",
+      backgroundColor: "transparent",
       width: imageWidth,
       height: imageHeight,
       style: {

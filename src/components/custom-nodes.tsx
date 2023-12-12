@@ -12,8 +12,8 @@ export function ZodObjectNode({
   isConnectable,
 }: NodeProps<ZodObjectNodeData>) {
   return (
-    <div className="bg-slate-50 rounded-md">
-      <div className="text-center bg-slate-100 p-2 rounded-sm">
+    <div className="bg-slate-50 border border-slate-200 rounded-md">
+      <div className="text-center bg-slate-200 p-2 rounded-sm">
         {data.label}
       </div>
       <div className="p-2">
@@ -54,8 +54,8 @@ export function ZodEnumNode({
   isConnectable,
 }: NodeProps<ZodEnumNodeData>) {
   return (
-    <div className="bg-slate-50 rounded-md">
-      <div className="text-center bg-slate-100 p-2 rounded-sm">
+    <div className="bg-slate-50 border border-slate-200 rounded-md">
+      <div className="text-center bg-slate-200 p-2 rounded-sm">
         {data.label}
       </div>
       <div className="p-2">
