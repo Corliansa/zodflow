@@ -8,3 +8,4 @@ next.config.js
 postcss.config.js
 tailwind.config.ts
 tsconfig.json
+bun.lockb

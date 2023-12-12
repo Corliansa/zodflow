@@ -14,9 +14,13 @@ import ReactFlow, {
   useNodesState,
 } from "reactflow";
 import * as nodeTypes from "./custom-nodes";
-
-import "reactflow/dist/style.css";
+import SmartBezierEdge from "@tisoap/react-flow-smart-edge";
 import DownloadImage from "./download-image";
+import "reactflow/dist/style.css";
+
+const edgeTypes = {
+  SmartBezierEdge,
+};
 
 export const Zodflow: React.FC<{
   initialNodes: Node[];
@@ -35,6 +39,7 @@ export const Zodflow: React.FC<{
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}

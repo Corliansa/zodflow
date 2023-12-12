@@ -179,7 +179,7 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
         markerEnd: {
           type: "arrowclosed" as MarkerType,
         },
-        type: "simplebezier",
+        type: "SmartBezierEdge",
       });
     }
   };
@@ -206,6 +206,12 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
           label: sourceHandle,
           items: targetSchema._def.values,
         },
+        height: 100 + 30 * targetSchema._def.values.length,
+        width:
+          Math.max(
+            sourceHandle.length * 15,
+            ...targetSchema._def.values.map((v: string) => v.length * 15)
+          ) + 25,
       });
       addEdge(newTarget);
     } else {
@@ -285,12 +291,12 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         label,
         items: baseSchema._def.values,
       },
-      height: 150 + 30 * baseSchema._def.values.length,
+      height: 100 + 30 * baseSchema._def.values.length,
       width:
         Math.max(
-          label.length * 16,
-          ...baseSchema._def.values.map((v: string) => v.length * 16)
-        ) + 50,
+          label.length * 15,
+          ...baseSchema._def.values.map((v: string) => v.length * 15)
+        ) + 25,
     });
   } else if (baseSchema instanceof z.ZodObject) {
     const objectEntries = Object.fromEntries(
@@ -313,14 +319,14 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
         entries: objectEntries,
         schemas: Object.keys(dict),
       },
-      height: 150 + 30 * Object.keys(objectEntries).length,
+      height: 100 + 30 * Object.keys(objectEntries).length,
       width:
         Math.max(
-          label.length * 16,
+          label.length * 15,
           ...Object.entries(objectEntries).map(
-            ([k, v]) => (k.length + renderType(v).length) * 16
+            ([k, v]) => (k.length + renderType(v).length) * 15
           )
-        ) + 50,
+        ) + 25,
     });
   }
 
@@ -330,14 +336,30 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
   };
 };
 
+const removeDuplicate = <T extends Dictionary>(dict: T) => {
+  const seenValues = new Set();
+
+  return Object.fromEntries(
+    Object.entries(dict).filter(([_, value]) => {
+      if (!seenValues.has(value)) {
+        seenValues.add(value);
+        return true;
+      }
+      return false;
+    })
+  );
+};
+
 export const getInitialData = <T extends Dictionary>(dict: T) => {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-  for (const schema of Object.values(dict)) {
+
+  const unduplicated = removeDuplicate(dict);
+  for (const schema of Object.values(unduplicated)) {
     if (!(schema instanceof z.ZodSchema)) {
       continue;
     }
-    const specs = getSchemaData(dict, schema);
+    const specs = getSchemaData(unduplicated, schema);
     nodes.push(...specs.nodes);
     edges.push(...specs.edges);
   }

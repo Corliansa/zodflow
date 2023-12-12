@@ -1,6 +1,6 @@
 {
   "name": "zodflow",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": false,
   "bin": {
     "zodflow": "cli.mjs"
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.0.4",
+    "@tisoap/react-flow-smart-edge": "^3.0.0",
     "esbuild": "^0.19.8",
     "html-to-image": "^1.11.11",
     "next": "14.0.3",
