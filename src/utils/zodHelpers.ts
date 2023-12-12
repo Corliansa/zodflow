@@ -32,13 +32,10 @@ const r = {
   ZodMap: /^ZodMap<(.+, .+)>$/,
   ZodSet: /^ZodSet<(.+)>$/,
   ZodLiteral: /^ZodLiteral<(.+)>$/,
-  ZodEnum: /^ZodEnum<(.+)>$/,
+  ZodEnum: /^ZodEnum<\[(.+)\]>$/,
 } as const;
 
-export const hasHandle = (
-  type: string | z.ZodFirstPartyTypeKind,
-  whitelist?: string[]
-): boolean => {
+export const hasHandle = (type: string, whitelist?: string[]): boolean => {
   if (["ZodObject"].includes(type)) {
     return true;
   }
@@ -47,9 +44,19 @@ export const hasHandle = (
     return true;
   }
 
-  const innerType = Object.values(r).find((regex) => type.match(regex));
-  if (innerType) {
-    return hasHandle(type.match(innerType)![1], whitelist);
+  const typeEntry = Object.entries(r).find(([_, regex]) => type.match(regex));
+  if (typeEntry) {
+    const [innerType, typeRegex] = typeEntry;
+    if (["ZodTuple", "ZodUnion", "ZodMap", "ZodEnum"].includes(innerType)) {
+      return type
+        .match(typeRegex)![1]
+        .split(", ")
+        .some((t) => hasHandle(t, whitelist));
+    }
+    if (["ZodRecord"].includes(innerType)) {
+      return hasHandle(type.match(typeRegex)![1].split(", ")[1], whitelist);
+    }
+    return hasHandle(type.match(typeRegex)![1], whitelist);
   }
 
   return false;
@@ -202,9 +209,9 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
       });
       addEdge(newTarget);
     } else {
-      return `ZodEnum<${targetSchema._def.values
+      return `ZodEnum<[${targetSchema._def.values
         .map((value: string) => JSON.stringify(value))
-        .join(", ")}>`;
+        .join(", ")}]>`;
     }
   } else if (targetSchema instanceof z.ZodObject) {
     const specs = getSchemaData(dict, targetSchema, {
