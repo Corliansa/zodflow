@@ -178,7 +178,7 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
   };
 
   const { baseSchema: targetSchema } = getBaseSchema(schema as z.ZodSchema);
-  const target = getSchemaName(dict, targetSchema);
+  const target = getSchemaName(dict, schema);
   const targetType = getZodType(targetSchema);
   if (target) {
     addEdge(target);
@@ -261,7 +261,7 @@ const getSchemaData = <T extends Dictionary, U extends z.ZodSchema>(
 
   const { baseSchema } = getBaseSchema(schema);
   const source =
-    getSchemaName(dict, baseSchema) ??
+    getSchemaName(dict, schema) ??
     config?.id ??
     idGenerator.generateId(getZodType(baseSchema));
   const label = config?.label ?? source;
