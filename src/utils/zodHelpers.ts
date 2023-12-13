@@ -170,9 +170,10 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
   const { source, sourceHandle, nodes, edges } = config;
 
   const addEdge = (target: string) => {
-    if (!edges.find((edge) => edge.target === target)) {
+    const edgeId = `${source}[${sourceHandle}]->${target}`;
+    if (!edges.find((edge) => edge.id === edgeId)) {
       edges.push({
-        id: `${source}-${target}`,
+        id: edgeId,
         source,
         sourceHandle,
         target,
@@ -192,7 +193,7 @@ const getType = <T extends Dictionary, U extends z.ZodSchema>(
     return target;
   }
 
-  const newTarget = `${source}:${sourceHandle}`;
+  const newTarget = `${source}::${sourceHandle}`;
   if (
     targetSchema instanceof z.ZodEnum ||
     targetSchema instanceof z.ZodNativeEnum
